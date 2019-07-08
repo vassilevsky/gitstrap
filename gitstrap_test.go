@@ -53,3 +53,15 @@ func Test_getOwner(t *testing.T) {
 	assert.Equal("nasa", owner)
 	assert.Nil(err)
 }
+
+func Test_getRepoName(t *testing.T) {
+	assert := assert.New(t)
+
+	n := "react"
+	config := new(Config)
+	config.Gitstrap.Github.Repo.Name = &n
+	name, err := getRepoName(config)
+
+	assert.Equal("react", name)
+	assert.Nil(err)
+}

@@ -4,10 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/g4s8/gopwd"
-	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,6 +11,11 @@ import (
 	"os/exec"
 	"strings"
 	"text/template"
+
+	"github.com/g4s8/gopwd"
+	"github.com/google/go-github/github"
+	"golang.org/x/oauth2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -269,16 +270,9 @@ func (strap *strapDestr) Run(opt Options) error {
 	if err != nil {
 		return strap.err("failed to get current user", err)
 	}
-	// @todo #9:30m/DEV Extract name resolution logic
-	//  and repo lookup logic below into separate functions.
-	var name string
-	if strap.base.cfg.Gitstrap.Github.Repo.Name != nil {
-		name = *strap.base.cfg.Gitstrap.Github.Repo.Name
-	} else {
-		name, err = gopwd.Name()
-		if err != nil {
-			return strap.err("Failed to get PWD", err)
-		}
+	name, err := getRepoName(strap.base.cfg)
+	if err != nil {
+		return strap.err("failed to determine repository name", err)
 	}
 	fmt.Printf("Looking up for repo %s/%s... ", owner, name)
 	_, resp, _ := strap.base.cli.Repositories.Get(strap.base.ctx, owner, name)
@@ -341,6 +335,15 @@ func getOwner(strap *strapCtx, opt Options) (string, error) {
 		return "", err
 	}
 	return *me.Login, nil
+}
+
+// getRepoName returns repository name from configuration file
+// or current directory name if the former is not set
+func getRepoName(config *Config) (string, error) {
+	if config.Gitstrap.Github.Repo.Name != nil {
+		return *config.Gitstrap.Github.Repo.Name, nil
+	}
+	return gopwd.Name()
 }
 
 func gitSync(repo *github.Repository) error {
