@@ -1,0 +1,5 @@
+gitstrap:
+    version: v1
+    github:
+        repo:
+            name: leftpad

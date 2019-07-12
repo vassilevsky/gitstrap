@@ -57,11 +57,16 @@ func Test_getOwner(t *testing.T) {
 func Test_getRepoName(t *testing.T) {
 	assert := assert.New(t)
 
-	n := "react"
 	config := new(Config)
-	config.Gitstrap.Github.Repo.Name = &n
-	name, err := getRepoName(config)
+	err := config.ParseFile("gitstrap_test.yml")
+	assert.Nil(err)
 
-	assert.Equal("react", name)
+	name, err := getRepoName(config)
+	assert.Equal("leftpad", name)
+	assert.Nil(err)
+
+	config.Gitstrap.Github.Repo.Name = nil
+	name, err = getRepoName(config)
+	assert.Equal("foo", name)
 	assert.Nil(err)
 }
